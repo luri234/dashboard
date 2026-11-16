@@ -5,10 +5,15 @@ import AlertUI from './components/AlertUI';
 import SelectorUI from './components/SelectorUI';
 import IndicatorUI from './components/IndicatorUI';
 import useFetchData from './hooks/useFetchData';
+import TableUI from './components/TableUI';
+
+import ChartUI from './components/ChartUI';
+import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
+
 
 function App() {
-    const dataFetcherOutput = useFetchData();
-
+    const { data, loading, error } = useFetchData();
     return (
         <Grid container spacing={5} sx={{ justifyContent: 'center', alignItems: 'center' }}>
             {/* Encabezado */}
@@ -32,56 +37,64 @@ function App() {
             {/* Indicadores */}
             <Grid container size={{ xs: 12, md: 9 }}>
                 <Grid size={{ xs: 12, md: 3 }}>
-                    {dataFetcherOutput && (
-                        <IndicatorUI
-                            title="Temperatura (2m)"
-                            description={`${dataFetcherOutput.current.temperature_2m} ${dataFetcherOutput.current_units.temperature_2m}`}
-                        />
-                    )}
+                     {loading && <CircularProgress />}
+                {error && <Alert severity="error">{error}</Alert>}
+                   
+                
+
+                <Grid size={{ xs: 12, md: 3 }}>
+                     {data &&
+                        (<IndicatorUI
+                            title='Temperatura (2m)'
+                            description={`${data.current.temperature_2m} ${data.current_units.temperature_2m}`} />)
+                    }
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 3 }}>
-                    {dataFetcherOutput && (
-                        <IndicatorUI
-                            title="Temperatura aparente"
-                            description={`${dataFetcherOutput.current.apparent_temperature} ${dataFetcherOutput.current_units.apparent_temperature}`}
-                        />
-                    )}
-                </Grid>
-
-                <Grid size={{ xs: 12, md: 3 }}>
-                    {dataFetcherOutput && (
+                    {data && (
                         <IndicatorUI
                             title="Velocidad del viento"
-                            description={`${dataFetcherOutput.current.wind_speed_10m} ${dataFetcherOutput.current_units.wind_speed_10m}`}
+                            description={`${data.current.wind_speed_10m} ${data.current_units.wind_speed_10m}`}
                         />
                     )}
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 3 }}>
-                    {dataFetcherOutput && (
+                    {data && (
                         <IndicatorUI
                             title="Humedad relativa"
-                            description={`${dataFetcherOutput.current.relative_humidity_2m} ${dataFetcherOutput.current_units.relative_humidity_2m}`}
+                            description={`${data.current.relative_humidity_2m} ${data.current_units.relative_humidity_2m}`}
                         />
                     )}
                 </Grid>
             </Grid>
-
             {/* Gráfico */}
             <Grid size={{ xs: 12, md: 6 }} sx={{ display: { xs: 'none', md: 'block' } }}>
-                Elemento: Gráfico
+                {data && (
+                    <ChartUI
+                        title='Temperatura y viento por hora'
+                        labels={data.hourly.time.map((tiempo) => tiempo.slice(11))}
+                        values1={data.hourly.temperature_2m}
+                        values2={data.hourly.wind_speed_10m}
+                        label1={`Temperatura (${data.hourly_units.temperature_2m})`}
+                        label2={`Viento (${data.hourly_units.wind_speed_10m})`} />
+                )}
             </Grid>
 
             {/* Tabla */}
             <Grid size={{ xs: 12, md: 6 }} sx={{ display: { xs: 'none', md: 'block' } }}>
-                Elemento: Tabla
+                {data && (
+                    <TableUI
+                        labels={data.hourly.time.map((tiempo) => tiempo.slice(11))}
+                        values1={data.hourly.temperature_2m}
+                        values2={data.hourly.wind_speed_10m}
+                        header1={`Temperatura (${data.hourly_units.temperature_2m})`}
+                        header2={`Viento (${data.hourly_units.wind_speed_10m})`} />
+                )}
             </Grid>
-
             {/* Información adicional */}
             <Grid size={{ xs: 12, md: 12 }}>Elemento: Información adicional</Grid>
         </Grid>
-    );
+    </Grid>);
 }
-
 export default App;
